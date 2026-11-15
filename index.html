@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light" />
+<meta name="referrer" content="no-referrer" />
 <title>行走中国，足迹留痕 · 旅行地图</title>
 <style>
   :root {
@@ -603,6 +603,66 @@
   }
   .toast.is-show { opacity: 1; transform: translate(-50%, 0); }
 
+  /* ---------- 欢迎小窗 ---------- */
+  body.intro-open { overflow: hidden; }
+  .intro {
+    position: fixed; inset: 0; z-index: 120;
+    display: grid; place-items: center; padding: 20px;
+    background: rgba(20, 14, 32, .55);
+    backdrop-filter: blur(6px);
+    animation: introFade .2s ease both;
+    cursor: pointer;
+  }
+  .intro[hidden] { display: none; }
+  @keyframes introFade { from { opacity: 0; } to { opacity: 1; } }
+  .intro-card {
+    position: relative; width: min(560px, 100%);
+    max-height: min(90vh, 760px); overflow: auto;
+    background: #fff; border-radius: 24px;
+    padding: 26px 26px 20px;
+    box-shadow: 0 40px 100px -30px rgba(20, 10, 40, .75);
+    cursor: default;
+    animation: introPop .26s cubic-bezier(.2, .8, .3, 1) both;
+  }
+  @keyframes introPop { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+  .intro-close {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 0; background: #f5f1fb; color: #6f6685;
+    font-size: 18px; line-height: 1; cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .intro-close:hover { background: #ece4f7; color: var(--purple-deep); }
+  .intro-eyebrow { margin: 0; font-size: 9.5px; letter-spacing: .22em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+  .intro-title { margin: 6px 0 0; font-size: 23px; letter-spacing: -.02em; line-height: 1.3; }
+  .intro-lead { margin: 10px 0 0; color: #5a4f70; font-size: 13.5px; line-height: 1.8; }
+  .intro-steps { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .intro-steps li { display: flex; gap: 12px; align-items: flex-start; }
+  .intro-step-num {
+    width: 32px; height: 32px; border-radius: 10px; flex: none;
+    background: #f4eefc; color: var(--purple-deep);
+    font-size: 11px; font-weight: 800; display: grid; place-items: center;
+  }
+  .intro-steps b { font-size: 13.5px; }
+  .intro-steps p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .intro-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .intro-actions .btn { flex: 1; padding: 11px 16px; }
+  .intro-foot { margin: 12px 0 0; font-size: 11px; color: #a79eb8; text-align: center; }
+  @media (max-width: 560px) {
+    .intro-card { padding: 22px 20px 18px; border-radius: 20px; }
+    .intro-title { font-size: 20px; }
+    .intro-actions { flex-direction: column-reverse; }
+  }
+
+  /* 底部使用说明里的「新手引导」入口 */
+  .guide-head { display: flex; align-items: center; gap: 10px; }
+  .guide-help {
+    border: 0; background: none; padding: 0;
+    color: var(--purple); font-size: 11.5px; font-weight: 600;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+  }
+  .guide-help:hover { color: var(--purple-deep); }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
@@ -807,7 +867,10 @@
 
   <!-- ============ 使用说明（页面最底部） ============ -->
   <section class="guide-block" aria-label="使用说明">
-    <h2>使用说明</h2>
+    <div class="guide-head">
+      <h2>使用说明</h2>
+      <button type="button" class="guide-help" id="introHelp">新手引导</button>
+    </div>
     <ul class="guide">
       <li>点击地图或在下方自选省份添加城市足迹。</li>
       <li>选择省份，城市，景点，随笔，心情，图片。</li>
@@ -834,6 +897,39 @@
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- 首次打开时的欢迎小窗 -->
+<div class="intro" id="intro" hidden role="dialog" aria-modal="true" aria-labelledby="introTitle">
+  <div class="intro-card">
+    <button type="button" class="intro-close" id="introClose" aria-label="关闭">×</button>
+    <p class="intro-eyebrow">Travel / Daily Log</p>
+    <h2 class="intro-title" id="introTitle">这是一个旅游/日常记录器</h2>
+    <p class="intro-lead">
+      如果你想记录生活，又因为太 I 而不敢发朋友圈；<br />
+      如果你想清晰地看到自己的旅游地图——这是一个非常好用的网站。<br />
+      在这里记录你的河山大好吧！
+    </p>
+    <ol class="intro-steps">
+      <li>
+        <span class="intro-step-num">01</span>
+        <div><b>点亮省份</b><p>点地图，或在下方选择省份。</p></div>
+      </li>
+      <li>
+        <span class="intro-step-num">02</span>
+        <div><b>留下一段记忆</b><p>填城市、景点、随笔、心情，粘贴照片。</p></div>
+      </li>
+      <li>
+        <span class="intro-step-num">03</span>
+        <div><b>随时回看</b><p>点按或悬停 1 秒看详情，卡片可随时编辑或删除。</p></div>
+      </li>
+    </ol>
+    <div class="intro-actions">
+      <button type="button" class="btn primary" id="introStart">开始记录</button>
+      <button type="button" class="btn" id="introLater">先随便看看</button>
+    </div>
+    <p class="intro-foot">数据仅储存在你的设备里 · 不上传服务器 · 可随时导出备份</p>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -953,6 +1049,12 @@
     btnCopyLink: $('btnCopyLink'),
     btnReset: $('btnReset'),
     importFile: $('importFile'),
+
+    intro: $('intro'),
+    introStart: $('introStart'),
+    introLater: $('introLater'),
+    introClose: $('introClose'),
+    introHelp: $('introHelp'),
 
     statProv: $('statProv'),
     statCity: $('statCity'),
@@ -2915,7 +3017,58 @@
   }
 
   /* =========================================================
-   * 16. 启动
+   * 16. 欢迎小窗（首次打开自动显示，可通过底部「新手引导」重开）
+   * ======================================================= */
+  const INTRO_KEY = 'travel-intro-seen.v1';
+  let introReturnFocus = null;
+
+  function hasSeenIntro() {
+    try { return localStorage.getItem(INTRO_KEY) === '1'; } catch (err) { return false; }
+  }
+
+  function markIntroSeen() {
+    try { localStorage.setItem(INTRO_KEY, '1'); } catch (err) { /* ignore */ }
+  }
+
+  function showIntro(force) {
+    if (!force && hasSeenIntro()) return;
+    introReturnFocus = document.activeElement;
+    els.intro.hidden = false;
+    document.body.classList.add('intro-open');
+    els.introStart.focus({ preventScroll: true });
+  }
+
+  function closeIntro(markSeen) {
+    if (els.intro.hidden) return;
+    els.intro.hidden = true;
+    document.body.classList.remove('intro-open');
+    if (markSeen) markIntroSeen();
+    if (introReturnFocus && typeof introReturnFocus.focus === 'function') {
+      introReturnFocus.focus({ preventScroll: true });
+    }
+    introReturnFocus = null;
+  }
+
+  function bindIntro() {
+    els.introStart.addEventListener('click', () => closeIntro(true));
+    els.introLater.addEventListener('click', () => closeIntro(true));
+    els.introClose.addEventListener('click', () => closeIntro(true));
+    // 点击遮罩空白处也关闭
+    els.intro.addEventListener('click', (e) => {
+      if (e.target === els.intro) closeIntro(true);
+    });
+    // 底部「新手引导」可随时重新打开
+    els.introHelp.addEventListener('click', () => showIntro(true));
+    document.addEventListener('keydown', (e) => {
+      if (!els.intro.hidden && e.key === 'Escape') {
+        e.preventDefault();
+        closeIntro(true);
+      }
+    });
+  }
+
+  /* =========================================================
+   * 17. 启动
    * ======================================================= */
   function showStatus(html, isError) {
     els.status.innerHTML = html;
@@ -2949,7 +3102,11 @@
     bindDetail();
     bindLightbox();
     bindShare();
+    bindIntro();
     bindForm();
+
+    // 首次打开自动显示欢迎小窗；关闭后写入 localStorage，不再自动弹出
+    setTimeout(() => showIntro(false), 250);
 
     showStatus('<div class="spinner" aria-hidden="true"></div><div>正在加载地图数据…<br><span class="small">阿里云 DataV · 完整中国省级边界</span></div>', false);
 
